@@ -4,6 +4,9 @@ import yaml
 SCORER_PROGRAM=('python', 'score.py')
 SCORER_CWD='scoring-2014'
 
+# Running the scorer can be slow, so we cache results
+_score_cache = {}
+
 class Scorer(object):
     def __init__(self, scoresheet):
         self.scoresheet = scoresheet
@@ -23,13 +26,18 @@ class Scorer(object):
                         stdin=PIPE,
                         stdout=PIPE,
                         cwd=SCORER_CWD)
-        yaml.dump(proton, process.stdin)
+        program_input = yaml.dump(proton)
+        cached_output = _score_cache.get(program_input, None)
+        if cached_output is not None:
+            return cached_output
+        process.stdin.write(program_input)
         process.stdin.close()
         output = yaml.load(process.stdout)
         process.wait()
         if process.returncode != 0:
             message = 'Proton process failed, code={}'.format(process.returncode)
             raise RuntimeError(message)
+        _score_cache[program_input] = output
         return output
 
 
