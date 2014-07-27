@@ -80,16 +80,16 @@ def test_league_points():
 
     league = leagues[id_]
 
-    assert league == {'JMS': 0.0, 'PAS': 0.0, 'RUN': 4.0, 'ICE': 3.0}
+    assert league == {'JMS': 0, 'PAS': 0, 'RUN': 8, 'ICE': 6}
 
 def test_team_points():
     scores = load_basic_data()
 
     expected = {
-        'JMS': TeamScore(0.0, 4),
-        'PAS': TeamScore(0.0, 0),
-        'RUN': TeamScore(4.0, 8),
-        'ICE': TeamScore(3.0, 2),
+        'JMS': TeamScore(0, 4),
+        'PAS': TeamScore(0, 0),
+        'RUN': TeamScore(8, 8),
+        'ICE': TeamScore(6, 2),
     }
 
     teams_data = scores.teams
