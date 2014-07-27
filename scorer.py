@@ -6,6 +6,7 @@ SCORER_PROGRAM=('python', 'colours.py')
 SCORER_CWD=os.path.join(os.path.dirname(os.path.realpath(__file__)),
                         'scoring-smallpeice-2014')
 
+"""
 # Running the scorer can be slow, so we cache results
 _score_cache = {}
 
@@ -47,4 +48,31 @@ class Scorer(object):
         output = self._run_process()
         return {tla: output['scores'][tla]['score']
                   for tla in self.scoresheet.iterkeys()}
+"""
+
+#  ___________________________________________________________ 
+# /     ___        _______ _   _ _       _   _    _    __  __ \
+# |    / \ \      / /  ___| | | | |     | | | |  / \   \ \/ / |
+# |   / _ \ \ /\ / /| |_  | | | | |     | |_| | / _ \   \  /  |
+# |  / ___ \ V  V / |  _| | |_| | |___  |  _  |/ ___ \  /  \  |
+# | /_/   \_\_/\_/  |_|    \___/|_____| |_| |_/_/   \_\/_/\_\ |
+# \                                                           /
+#  ----------------------------------------------------------- 
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+
+import sys
+sys.path.append(SCORER_CWD)
+
+from colours import calculate_scores as calculate
+
+class Scorer(object):
+    def __init__(self, scoresheet):
+        self.scoresheet = scoresheet
+
+    def calculate_scores(self):
+        return calculate(self.scoresheet)
 
