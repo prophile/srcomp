@@ -2,9 +2,9 @@ from subprocess import Popen, PIPE
 import yaml
 import os.path
 
-SCORER_PROGRAM=('python', 'score.py')
+SCORER_PROGRAM=('python', 'colours.py')
 SCORER_CWD=os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                        'scoring-2014')
+                        'scoring-smallpeice-2014')
 
 # Running the scorer can be slow, so we cache results
 _score_cache = {}
