@@ -93,8 +93,8 @@ class KnockoutScheduler(object):
             self.schedule.matches.append(new_matches)
             self.period.matches.append(new_matches)
 
-    def get_winners(self, game):
-        "Find the parent match's winners"
+    def get_ranking(self, game):
+        "Get a ranking of the given match's teams"
         desc = (game.arena, game.num)
         positions = self.scores.league.positions
 
@@ -102,8 +102,8 @@ class KnockoutScheduler(object):
         points = self.scores.knockout.ranked_points.get(desc, None)
 
         if points is None:
-            "Parent match hasn't been scored yet"
-            return [UNKNOWABLE_TEAM, UNKNOWABLE_TEAM]
+            "Given match hasn't been scored yet"
+            return [UNKNOWABLE_TEAM] * 4
 
         def srt(x, y):
             pts_cmp = cmp(x[1], y[1])
@@ -115,12 +115,19 @@ class KnockoutScheduler(object):
                 return cmp(y_league_pos, x_league_pos)
             return pts_cmp
 
-        # Extract the two teams who scored highest
-        w = sorted(points.items(), cmp=srt)[-2:]
+        # Sort by points with tie resolution
+        with_points = sorted(points.items(), cmp=srt)
 
         # Extract just TLAs
-        winners = [x[0] for x in w]
-        return winners
+        ranking = [x[0] for x in with_points]
+
+        return ranking
+
+    def get_winners(self, game):
+        "Find the parent match's winners"
+
+        ranking = self.get_ranking(game)
+        return ranking[-2:]
 
     def _add_round(self, arenas):
         prev_round = self.knockout_rounds[-1]
@@ -197,12 +204,12 @@ class KnockoutScheduler(object):
 
 class MatchSchedule(object):
     @classmethod
-    def create(cls, config_fname, scores, arenas):
+    def create(cls, config_fname, scores, arenas, knockout_scheduler = KnockoutScheduler):
         y = yaml_loader.load(config_fname)
 
         schedule = cls(y)
 
-        k = KnockoutScheduler(schedule, scores, arenas, y)
+        k = knockout_scheduler(schedule, scores, arenas, y)
         k.add_knockouts()
 
         schedule.knockout_rounds = k.knockout_rounds
