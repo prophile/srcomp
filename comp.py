@@ -9,6 +9,8 @@ import teams
 
 from scorer import Scorer
 
+from static_knockout_scheduler import StaticScheduler
+
 class SRComp(object):
     def __init__(self, root):
         self.root = root
@@ -18,5 +20,6 @@ class SRComp(object):
         self.arenas = arenas.load_arenas(os.path.join(root, "arenas.yaml"))
         schedule_fname = os.path.join(root, "schedule.yaml")
         self.schedule = matches.MatchSchedule.create(schedule_fname,
-                                                     self.scores, self.arenas)
+                                                     self.scores, self.arenas,
+                                                     knockout_scheduler = StaticScheduler)
         self.corners = arenas.load_corners(os.path.join(root, "arenas.yaml"))
