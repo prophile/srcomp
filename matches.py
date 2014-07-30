@@ -116,6 +116,8 @@ class KnockoutScheduler(object):
             return pts_cmp
 
         # Sort by points with tie resolution
+        # Note that this list is upside down compared to what might be
+        # expected, ie the winner is at the end of the list
         with_points = sorted(points.items(), cmp=srt)
 
         # Extract just TLAs

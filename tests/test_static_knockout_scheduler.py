@@ -85,18 +85,18 @@ def get_scheduler(matches = None, positions = None, \
     scheduler = StaticScheduler(league_schedule, scores, arenas, config)
     return scheduler
 
-def test_full():
-    scheduler = get_scheduler()
+def helper(places, knockout_points = None):
+    scheduler = get_scheduler(knockout_points = knockout_points)
     scheduler.add_knockouts()
 
     period = scheduler.period
 
     expected = [
-        {'A': Match(0, 'A', ['CCC', 'EEE', 'HHH', 'JJJ'], datetime(2014, 4, 27, 14, 30), datetime(2014, 4, 27, 14, 35), KNOCKOUT_MATCH) },
-        {'A': Match(1, 'A', ['DDD', 'FFF', 'GGG', 'III'], datetime(2014, 4, 27, 14, 35), datetime(2014, 4, 27, 14, 40), KNOCKOUT_MATCH) },
-        {'A': Match(2, 'A', ['BBB', '???', '???', '???'], datetime(2014, 4, 27, 14, 45), datetime(2014, 4, 27, 14, 50), KNOCKOUT_MATCH) },
-        {'A': Match(3, 'A', ['AAA', '???', '???', '???'], datetime(2014, 4, 27, 14, 50), datetime(2014, 4, 27, 14, 55), KNOCKOUT_MATCH) },
-        {'A': Match(4, 'A', ['???', '???', '???', '???'], datetime(2014, 4, 27, 15, 00), datetime(2014, 4, 27, 15, 05), KNOCKOUT_MATCH) },
+        {'A': Match(0, 'A', places[0], datetime(2014, 4, 27, 14, 30), datetime(2014, 4, 27, 14, 35), KNOCKOUT_MATCH) },
+        {'A': Match(1, 'A', places[1], datetime(2014, 4, 27, 14, 35), datetime(2014, 4, 27, 14, 40), KNOCKOUT_MATCH) },
+        {'A': Match(2, 'A', places[2], datetime(2014, 4, 27, 14, 45), datetime(2014, 4, 27, 14, 50), KNOCKOUT_MATCH) },
+        {'A': Match(3, 'A', places[3], datetime(2014, 4, 27, 14, 50), datetime(2014, 4, 27, 14, 55), KNOCKOUT_MATCH) },
+        {'A': Match(4, 'A', places[4], datetime(2014, 4, 27, 15, 00), datetime(2014, 4, 27, 15, 05), KNOCKOUT_MATCH) },
     ]
 
     for i in range(len(expected)):
@@ -104,3 +104,60 @@ def test_full():
         a = period.matches[i]
 
         assert e == a, "Match {0} in the knockouts".format(i)
+
+def test_before():
+    league_matches = [{'A': Match(0, 'A', [], datetime(2014, 4, 27, 12, 30), datetime(2014, 4, 27, 12, 35), LEAGUE_MATCH) }]
+
+    scheduler = get_scheduler(matches = league_matches)
+    scheduler.add_knockouts()
+
+    period = scheduler.period
+
+    expected = [
+        {'A': Match(1, 'A', [UNKNOWABLE_TEAM] * 4, datetime(2014, 4, 27, 14, 30), datetime(2014, 4, 27, 14, 35), KNOCKOUT_MATCH) },
+        {'A': Match(2, 'A', [UNKNOWABLE_TEAM] * 4, datetime(2014, 4, 27, 14, 35), datetime(2014, 4, 27, 14, 40), KNOCKOUT_MATCH) },
+        {'A': Match(3, 'A', [UNKNOWABLE_TEAM] * 4, datetime(2014, 4, 27, 14, 45), datetime(2014, 4, 27, 14, 50), KNOCKOUT_MATCH) },
+        {'A': Match(4, 'A', [UNKNOWABLE_TEAM] * 4, datetime(2014, 4, 27, 14, 50), datetime(2014, 4, 27, 14, 55), KNOCKOUT_MATCH) },
+        {'A': Match(5, 'A', [UNKNOWABLE_TEAM] * 4, datetime(2014, 4, 27, 15, 00), datetime(2014, 4, 27, 15, 05), KNOCKOUT_MATCH) },
+    ]
+
+    for i in range(len(expected)):
+        e = expected[i]
+        a = period.matches[i]
+
+        assert e == a, "Match {0} in the knockouts".format(i)
+
+def test_start():
+    helper([
+        ['CCC', 'EEE', 'HHH', 'JJJ'],
+        ['DDD', 'FFF', 'GGG', 'III'],
+        ['BBB'] + [UNKNOWABLE_TEAM] * 3,
+        ['AAA'] + [UNKNOWABLE_TEAM] * 3,
+        [UNKNOWABLE_TEAM] * 4,
+    ])
+
+def test_partial_1():
+    helper([
+        ['CCC', 'EEE', 'HHH', 'JJJ'],
+        ['DDD', 'FFF', 'GGG', 'III'],
+        ['BBB', 'JJJ', 'EEE', UNKNOWABLE_TEAM],
+        ['AAA', 'HHH', UNKNOWABLE_TEAM, UNKNOWABLE_TEAM],
+        [UNKNOWABLE_TEAM] * 4,
+    ], {
+        # QF 1
+        ('A', 0): { 'CCC': 1.0, 'EEE': 2.0, 'HHH': 3.0, 'JJJ': 4.0, }
+    })
+
+def test_partial_2():
+    helper([
+        ['CCC', 'EEE', 'HHH', 'JJJ'],
+        ['DDD', 'FFF', 'GGG', 'III'],
+        ['BBB', 'JJJ', 'EEE', 'GGG'],
+        ['AAA', 'HHH', 'III', 'FFF'],
+        [UNKNOWABLE_TEAM] * 4,
+    ], {
+        # QF 1
+        ('A', 0): { 'CCC': 1.0, 'EEE': 2.0, 'HHH': 3.0, 'JJJ': 4.0, },
+        # QF 2
+        ('A', 1): { 'DDD': 1.0, 'FFF': 2.0, 'GGG': 3.0, 'III': 4.0, }
+    })

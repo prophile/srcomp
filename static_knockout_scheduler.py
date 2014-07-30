@@ -29,6 +29,8 @@ class StaticScheduler(KnockoutScheduler):
         assert match is not None, "Reference '{0}' to unscheduled match!".format(team_ref)
 
         ranking = self.get_ranking(match)
+        # move the winner to the front of the list
+        ranking.reverse()
         return ranking[pos]
 
     def _add_match(self, match_info):
